@@ -1,0 +1,95 @@
+<!-- templates/base.html - Template base para herança -->
+<!-- Todos os outros templates herdam deste arquivo -->
+<!-- Define a estrutura HTML, navbar, e blocos de conteúdo -->
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block titulo %}Valorize - Dashboard{% endblock %}</title>
+    
+    <!-- ===== Bootstrap CSS (CDN) ===== -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- ===== CSS customizado ===== -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    {% block css_adicional %}{% endblock %}
+</head>
+<body>
+    <!-- ===== Navbar de navegação ===== -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid ps-3 pe-3">
+            <!-- Logo simplificado -->
+            <a class="navbar-brand" href="{{ url_for('visualizar_compras') }}">
+                <strong>Valorize</strong>
+            </a>
+            
+            <!-- Botão para expandir menu em mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <!-- Menu colapsável -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <!-- Links apenas para as duas tabelas principais -->
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'visualizar_compras' %}active{% endif %}" href="{{ url_for('visualizar_compras') }}">
+                            Compras
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'visualizar_estoque' %}active{% endif %}" href="{{ url_for('visualizar_estoque') }}">
+                            Gestão de Estoque
+                        </a>
+                    </li>
+                    
+                    <!-- Menu de usuário -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="menuUsuario" role="button" data-bs-toggle="dropdown">
+                            {{ current_user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="menuUsuario">
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Sair</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- ===== Container principal ===== -->
+    <div class="container-fluid mt-3 mb-5 ps-3 pe-3">
+        <!-- ===== Exibição de mensagens flash ===== -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for categoria, mensagem in messages %}
+                    <div class="alert alert-{{ 'danger' if categoria == 'error' else categoria }} alert-dismissible fade show" role="alert">
+                        {{ mensagem }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <!-- ===== Bloco de conteúdo principal ===== -->
+        {% block conteudo %}{% endblock %}
+    </div>
+    
+    <!-- ===== Footer ===== -->
+    <footer>
+        <div class="container-fluid">
+            <p class="m-0">&copy; 2025 Valorize - Dashboard de Compras e Estoque</p>
+        </div>
+    </footer>
+    
+    <!-- ===== Bootstrap JS (CDN) ===== -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- ===== Scripts customizados ===== -->
+    {% block js_adicional %}{% endblock %}
+</body>
+</html>

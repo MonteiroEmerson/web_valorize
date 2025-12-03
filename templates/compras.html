@@ -1,0 +1,96 @@
+<!-- templates/compras.html - Página de visualização de compras -->
+<!-- Exibe lista de todas as compras com filtros por data, conta e produto -->
+
+{% extends "base.html" %}
+
+{% block titulo %}Compras - Valorize{% endblock %}
+
+{% block conteudo %}
+<div class="page-header mb-3">
+    <h2>Compras</h2>
+</div>
+
+<!-- ===== Formulário de Filtros (Layout horizontal) ===== -->
+<div class="filters-bar mb-4">
+    <form method="GET" action="{{ url_for('visualizar_compras') }}" class="row g-2 align-items-end">
+        <!-- Data Inicial -->
+        <div class="col-auto">
+            <label for="data_inicial" class="form-label">Data Inicial</label>
+            <input type="date" class="form-control" id="data_inicial" name="data_inicial" 
+                   value="{{ filtros['data_inicial'].strftime('%Y-%m-%d') if filtros['data_inicial'] else '' }}">
+        </div>
+        
+        <!-- Data Final -->
+        <div class="col-auto">
+            <label for="data_final" class="form-label">Data Final</label>
+            <input type="date" class="form-control" id="data_final" name="data_final" 
+                   value="{{ filtros['data_final'].strftime('%Y-%m-%d') if filtros['data_final'] else '' }}">
+        </div>
+        
+        <!-- Conta/Estoque -->
+        <div class="col-auto">
+            <label for="conta_estoque" class="form-label">Estoque</label>
+            <input type="number" class="form-control" id="conta_estoque" name="conta_estoque" 
+                   placeholder="Nº da conta" value="{{ filtros['conta_estoque'] or '' }}">
+        </div>
+        
+        <!-- Produto (busca) -->
+        <div class="col-auto">
+            <label for="produto" class="form-label">Produto</label>
+            <input type="text" class="form-control" id="produto" name="produto" 
+                   placeholder="Código ou descrição" value="{{ filtros['produto'] or '' }}">
+        </div>
+        
+        <!-- Botões de ação -->
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary btn-sm">Buscar</button>
+            <a href="{{ url_for('visualizar_compras') }}" class="btn btn-secondary btn-sm">Limpar</a>
+        </div>
+    </form>
+</div>
+
+<!-- ===== Informações de resultado ===== -->
+<div class="mb-3">
+    <small class="text-muted">
+        Total de registros: <strong>{{ dados|length }}</strong>
+    </small>
+</div>
+
+<!-- ===== Tabela de Compras ===== -->
+<div class="table-responsive">
+    <table class="table table-sm table-striped table-hover">
+        <thead class="table-header">
+            <tr>
+                <th style="width: 80px;">Data</th>
+                <th style="width: 60px;">COD</th>
+                <th>Descrição</th>
+                <th style="width: 70px;">Peso</th>
+                <th style="width: 90px;">R$ Unitário</th>
+                <th style="width: 90px;">R$ Total</th>
+                <th style="width: 60px;">Estoque</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if dados %}
+                {% for item in dados %}
+                <tr>
+                    <td class="text-muted">{{ item['data'] }}</td>
+                    <td class="text-muted">{{ item['cod'] }}</td>
+                    <td>{{ item['descricao'] }}</td>
+                    <td class="text-end">{{ "%.3f"|format(item['peso']) }}</td>
+                    <td class="text-end currency">R$ {{ "%.2f"|format(item['valor_unitario']) }}</td>
+                    <td class="text-end currency">R$ {{ "%.2f"|format(item['total']) }}</td>
+                    <td class="text-muted">{{ item['conta'] }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        Nenhuma compra encontrada com os filtros selecionados
+                    </td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

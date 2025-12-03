@@ -1,0 +1,428 @@
+/* static/style.css - Estilos customizados da aplicação */
+/* Inspirado na interface desktop Valorize */
+
+/* ===== Variáveis de cor ===== */
+:root {
+  --primary-color: #667eea;
+  --secondary-color: #764ba2;
+  --success-color: #48bb78;
+  --danger-color: #f56565;
+  --warning-color: #ed8936;
+  --info-color: #4299e1;
+  --light-color: #f7fafc;
+  --dark-color: #2d3748;
+  --border-color: #e2e8f0;
+  --header-bg: #f5f5f5;
+}
+
+/* ===== Fonte padrão ===== */
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #fafafa;
+  color: #333;
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+/* ===== Navbar (similar ao desktop) ===== */
+.navbar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #f5f5f5 !important;
+  border-bottom: 1px solid var(--border-color);
+  padding: 8px 0;
+}
+
+.navbar-brand {
+  font-size: 18px;
+  font-weight: bold;
+  color: #313de9 !important;
+  letter-spacing: 1px;
+}
+
+.nav-link {
+  font-size: 13px;
+  color: #333 !important;
+  margin: 0 5px;
+  padding: 4px 8px !important;
+  border-radius: 3px;
+}
+
+.nav-link:hover {
+  background-color: #e8e8e8;
+  color: #667eea !important;
+}
+
+.nav-link.active {
+  background-color: #667eea;
+  color: white !important;
+}
+
+/* ===== Filtros (layout compacto horizontal) ===== */
+.filtro-header {
+  background-color: var(--header-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.filtro-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.filtro-group {
+  flex: 0 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filtro-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dark-color);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filtro-group input,
+.filtro-group select {
+  font-size: 12px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  width: 150px;
+}
+
+.filtro-group input:focus,
+.filtro-group select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+/* ===== Cards ===== */
+.card {
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.card-header {
+  background-color: var(--header-bg);
+  border-bottom: 1px solid var(--border-color);
+  padding: 10px 12px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--dark-color);
+}
+
+.card-body {
+  padding: 12px;
+}
+
+/* ===== Tabelas (Desktop-like) ===== */
+.table {
+  margin-bottom: 0;
+  font-size: 12px;
+}
+
+.table thead {
+  background-color: var(--header-bg);
+  color: var(--dark-color);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.table th {
+  font-weight: 600;
+  padding: 8px 10px;
+  text-align: left;
+  white-space: nowrap;
+  border-right: 1px solid var(--border-color);
+}
+
+.table th:last-child {
+  border-right: none;
+}
+
+.table td {
+  padding: 8px 10px;
+  border-right: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+
+.table td:last-child {
+  border-right: none;
+}
+
+.table tbody tr {
+  transition: background-color 0.15s ease;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.table tbody tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+/* ===== Alinhamento de números ===== */
+.text-end {
+  text-align: right !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+/* ===== Formatação de moeda ===== */
+.currency {
+  color: #27ae60;
+  font-weight: 500;
+  font-family: "Courier New", monospace;
+}
+
+.currency.negative {
+  color: #e74c3c;
+}
+
+.currency.positive {
+  color: #27ae60;
+}
+
+/* ===== Botões ===== */
+.btn {
+  border-radius: 3px;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+}
+
+.btn-secondary {
+  background-color: #ccc;
+  color: #333;
+  border-color: #ccc;
+}
+
+.btn-secondary:hover {
+  background-color: #aaa;
+  border-color: #aaa;
+}
+
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+/* ===== Badges para status ===== */
+.badge {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.badge-success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.badge-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.badge-warning {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.badge-info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+/* ===== Títulos e Headers ===== */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 700;
+  color: var(--dark-color);
+  margin-bottom: 10px;
+}
+
+h1 {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+h2 {
+  font-size: 16px;
+}
+
+p.text-muted {
+  color: #999;
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+
+/* ===== KPI Cards (Dashboard) ===== */
+.kpi-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.kpi-card .kpi-value {
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin: 8px 0;
+}
+
+.kpi-card .kpi-label {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ===== Alertas ===== */
+.alert {
+  border: none;
+  border-radius: 3px;
+  font-size: 12px;
+  padding: 10px 12px;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.alert-warning {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+/* ===== Checkbox e Radio customizados ===== */
+.form-check {
+  margin: 0;
+}
+
+.form-check-input {
+  cursor: pointer;
+}
+
+.form-check-label {
+  cursor: pointer;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+/* ===== Gráficos ===== */
+canvas {
+  max-height: 350px;
+}
+
+/* ===== Footer ===== */
+footer {
+  background-color: #f5f5f5;
+  border-top: 1px solid var(--border-color);
+  font-size: 11px;
+  color: #999;
+  margin-top: 32px;
+  padding: 16px;
+}
+
+/* ===== Responsividade ===== */
+@media (max-width: 768px) {
+  .filtro-row {
+    flex-direction: column;
+  }
+
+  .filtro-group input,
+  .filtro-group select {
+    width: 100%;
+  }
+
+  .table {
+    font-size: 11px;
+  }
+
+  .table th,
+  .table td {
+    padding: 6px 8px;
+  }
+
+  .btn {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .navbar-brand {
+    font-size: 16px;
+  }
+
+  h1 {
+    font-size: 18px;
+  }
+}
+
+/* ===== Utilitários ===== */
+.text-success {
+  color: #27ae60 !important;
+}
+
+.text-danger {
+  color: #e74c3c !important;
+}
+
+.text-warning {
+  color: #f39c12 !important;
+}
+
+.text-info {
+  color: #3498db !important;
+}
+
+.text-muted {
+  color: #999 !important;
+}
