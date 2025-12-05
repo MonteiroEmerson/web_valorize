@@ -13,11 +13,14 @@
                 <h1 class="display-1 text-danger">404</h1>
                 <h2>Página Não Encontrada</h2>
                 <p class="text-muted mb-4">Desculpe, a página que você está procurando não existe.</p>
-                <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
-                    Voltar ao Dashboard
+
+                <!-- IMPORTANTE: endpoint correto é 'visualizar_compras' -->
+                <a href="{{ url_for('visualizar_compras') }}" class="btn btn-primary">
+                    Voltar para Compras
                 </a>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
+

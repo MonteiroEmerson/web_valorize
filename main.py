@@ -1,15 +1,16 @@
 # main.py - Aplicação principal Flask
 # Ponto de entrada da aplicação, inicializa Flask, banco de dados e rotas
 
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+import os
 from flask_login import LoginManager, login_required, current_user
 from config import config
 from db import db, Usuario, Compra, GestaoEstoque
 from auth import auth_bp, criar_usuario_padrao
 from datetime import datetime, timedelta
 from decimal import Decimal
-from sqlalchemy import func, text
-import os
+from sqlalchemy import func
+
 
 # ===== Inicialização da aplicação Flask =====
 app = Flask(__name__)
@@ -51,108 +52,89 @@ def formatar_decimal(valor, casas=2):
     return float(round(Decimal(str(valor)), casas))
 
 
+def _converter_data(data_str, data_padrao=None):
+    """
+    Converte string de data para objeto date
+    Se falhar ou estiver vazia, retorna data_padrao
+    """
+    if not data_str:
+        return data_padrao
+    try:
+        return datetime.strptime(data_str, '%Y-%m-%d').date()
+    except:
+        return data_padrao
+
+
 def obter_filtros_request():
     """
-    Extrai os filtros do request (GET/POST)
-    Retorna um dicionário com data_inicial, data_final, conta_estoque, produto
+    Extrai os filtros do request (GET/POST) e PERSISTE na sessão.
+    - Se o campo vier no request (mesmo vazio), ele sobrescreve a sessão.
+      -> Ex.: usuário apaga o produto e envia = limpa filtro.
+    - Se o campo NÃO vier no request, reaproveita da sessão.
     """
-    filtros = {
-        'data_inicial': request.args.get('data_inicial', '') or request.form.get('data_inicial', ''),
-        'data_final': request.args.get('data_final', '') or request.form.get('data_final', ''),
-        'conta_estoque': request.args.get('conta_estoque', '') or request.form.get('conta_estoque', ''),
-        'produto': request.args.get('produto', '') or request.form.get('produto', ''),
-        'filtro_tipo': request.args.get('filtro_tipo', 'todos') or request.form.get('filtro_tipo', 'todos')
+
+    # 1) Carrega o que já está salvo na sessão (strings)
+    filtros_session = session.get('filtros', {})
+
+    data_inicial_str_session = filtros_session.get('data_inicial')
+    data_final_str_session   = filtros_session.get('data_final')
+    conta_session            = filtros_session.get('conta_estoque', '')
+    produto_session          = filtros_session.get('produto', '')
+    filtro_tipo_session      = filtros_session.get('filtro_tipo', 'todos')
+
+    # Helper: pega parâmetro respeitando "limpar"
+    def get_param(nome, session_value, default_value=''):
+        # Se o campo veio na querystring (?nome=...) ou no form, usamos isso
+        if nome in request.args:
+            return request.args.get(nome) or ''
+        if nome in request.form:
+            return request.form.get(nome) or ''
+        # Se não veio no request, reaproveita sessão
+        return session_value if session_value is not None else default_value
+
+    # 2) Lê valores do request (ou sessão se não vierem)
+    data_inicial_str = get_param('data_inicial', data_inicial_str_session, None)
+    data_final_str   = get_param('data_final',   data_final_str_session,   None)
+    conta_estoque    = get_param('conta_estoque', conta_session, '')
+    produto          = get_param('produto',       produto_session, '')
+    filtro_tipo      = get_param('filtro_tipo',   filtro_tipo_session, 'todos')
+
+    # 3) Aplica padrões de datas
+    hoje = datetime.now().date()
+
+    if not data_inicial_str:
+        data_inicial = hoje - timedelta(days=365)
+        data_inicial_str = data_inicial.strftime('%Y-%m-%d')
+    else:
+        data_inicial = _converter_data(data_inicial_str, hoje - timedelta(days=365))
+        data_inicial_str = data_inicial.strftime('%Y-%m-%d')
+
+    if not data_final_str:
+        data_final = hoje
+        data_final_str = data_final.strftime('%Y-%m-%d')
+    else:
+        data_final = _converter_data(data_final_str, hoje)
+        data_final_str = data_final.strftime('%Y-%m-%d')
+
+    # 4) Salva na sessão (sempre string)
+    session['filtros'] = {
+        'data_inicial':  data_inicial_str,
+        'data_final':    data_final_str,
+        'conta_estoque': conta_estoque,
+        'produto':       produto,
+        'filtro_tipo':   filtro_tipo,
     }
-    
-    # Converte datas de string para objeto date se fornecidas
-    try:
-        if filtros['data_inicial']:
-            filtros['data_inicial'] = datetime.strptime(filtros['data_inicial'], '%Y-%m-%d').date()
-        else:
-            # Se não fornecida, usa 1 ano atrás
-            filtros['data_inicial'] = datetime.now().date() - timedelta(days=365)
-    except:
-        filtros['data_inicial'] = datetime.now().date() - timedelta(days=365)
-    
-    try:
-        if filtros['data_final']:
-            filtros['data_final'] = datetime.strptime(filtros['data_final'], '%Y-%m-%d').date()
-        else:
-            # Se não fornecida, usa hoje
-            filtros['data_final'] = datetime.now().date()
-    except:
-        filtros['data_final'] = datetime.now().date()
-    
-    return filtros
+
+    # 5) Retorna para uso nas queries
+    return {
+        'data_inicial':  data_inicial,
+        'data_final':    data_final,
+        'conta_estoque': conta_estoque,
+        'produto':       produto,
+        'filtro_tipo':   filtro_tipo,
+    }
 
 
-def aplicar_filtros_compra(query, filtros):
-    """
-    Aplica filtros à query de compras
-    Recebe a query e um dicionário de filtros
-    Retorna a query modificada com WHERE clauses
-    """
-    # Filtro por data
-    if filtros['data_inicial']:
-        query = query.filter(Compra.data >= filtros['data_inicial'])
-    
-    if filtros['data_final']:
-        query = query.filter(Compra.data <= filtros['data_final'])
-    
-    # Filtro por conta de estoque
-    if filtros['conta_estoque']:
-        try:
-            conta = int(filtros['conta_estoque'])
-            query = query.filter(Compra.conta_estoque == conta)
-        except:
-            pass
-    
-    # Filtro por produto (busca em descricao ou cod)
-    if filtros['produto']:
-        termo = f"%{filtros['produto']}%"
-        query = query.filter(
-            (Compra.descricao.ilike(termo)) | 
-            (Compra.cod.cast(db.String).ilike(termo))
-        )
-    
-    return query
-
-
-def aplicar_filtros_estoque(query, filtros):
-    """
-    Aplica filtros à query de estoque
-    Semelhante a aplicar_filtros_compra, mas para a tabela gestao_estoque
-    """
-    # Filtro por data
-    if filtros['data_inicial']:
-        query = query.filter(GestaoEstoque.data >= filtros['data_inicial'])
-    
-    if filtros['data_final']:
-        query = query.filter(GestaoEstoque.data <= filtros['data_final'])
-    
-    # Filtro por conta de estoque
-    if filtros['conta_estoque']:
-        try:
-            conta = int(filtros['conta_estoque'])
-            query = query.filter(GestaoEstoque.conta_estoque == conta)
-        except:
-            pass
-    
-    # Filtro por produto
-    if filtros['produto']:
-        termo = f"%{filtros['produto']}%"
-        query = query.filter(
-            (GestaoEstoque.descricao.ilike(termo)) | 
-            (GestaoEstoque.cod.cast(db.String).ilike(termo))
-        )
-    
-    # Filtro por tipo (Todos/Entradas/Saídas)
-    if filtros['filtro_tipo'] == 'entradas':
-        query = query.filter(GestaoEstoque.entrada > 0)
-    elif filtros['filtro_tipo'] == 'saidas':
-        query = query.filter(GestaoEstoque.saida > 0)
-    
-    return query
 
 
 # ====== ROTAS PRINCIPAIS ======
@@ -165,8 +147,6 @@ def index():
     if current_user.is_authenticated:
         return redirect(url_for('visualizar_compras'))
     return redirect(url_for('auth.login'))
-
-
 
 
 @app.route('/compras/por-periodo')
@@ -552,6 +532,16 @@ def erro_404(error):
 def erro_500(error):
     """Tratamento de erro 500 (erro interno do servidor)"""
     return render_template('erro_500.html'), 500
+
+@app.route('/favicon.ico')
+def favicon():
+    """Serve o favicon para evitar 404 a cada requisição."""
+    return send_from_directory(
+        os.path.join(app.root_path, 'static'),
+        'favicon.ico',
+        mimetype='image/vnd.microsoft.icon'
+    )
+
 
 
 # ====== PONTO DE ENTRADA DA APLICAÇÃO ======
